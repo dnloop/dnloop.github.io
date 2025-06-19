@@ -1,0 +1,128 @@
+site_author: dnloop
+
+## Repo settings
+repo_name: dnloop.github.io
+repo_url: https://github.com/dnloop/dnloop.github.io
+
+## Copyright
+copyright: Copyright 2025 © dnloop
+
+## Theme settings
+theme:
+  name: material
+  custom_dir: 'overrides/'
+  palette:
+    - scheme: default
+      primary: red
+      accent: lime
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: red
+      accent: lime
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+  favicon: assets/images/favicon.png
+  
+  icon:
+    logo: assets/images/favicon.svg
+  logo: assets/images/favicon.svg
+  
+  features:
+    - search.highlight
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.instant
+    - navigation.top
+    - toc.integrate
+
+## Extra data
+extra:
+  alternate:
+    # Switch to English
+    - name: English
+      link: /en/
+      lang: en
+
+    # Switch to Spanish
+    - name: Español
+      link: /es/
+      lang: es
+  social:
+    - icon: octicons/mark-github-24
+      link: https://dnloop.github.io/
+  
+  ## Made with
+  ### this extra key can set `Made with ...` text in footer
+  ### set true to get default one
+  ### comment for set false to remove
+  ### or set your custom text!
+  # made_with: Made with ♥
+
+  ## Navigation
+  use_directory_urls: true
+
+## Extra js files
+extra_javascript:
+  - assets/javascripts/tablesort.js
+
+## Extra css files
+### comment these lines,
+### if you want to use default material theme
+extra_css:
+  - assets/stylesheets/fonts.css
+  - assets/stylesheets/vars.css
+  - assets/stylesheets/scheme.css
+  - assets/stylesheets/primary.css
+  - assets/stylesheets/accent.css
+  - assets/stylesheets/admonitions.css
+  - assets/stylesheets/fixes.css
+  - assets/stylesheets/styles.css
+
+## Extension settings
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.caret
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tilde
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - meta
+  - toc:
+      permalink: "#"
+
+## Plugin settings
+plugins:
+  - search
+  - blog
+  - macros
+  - minify:
+      minify_html: true
+      minify_js: true
+      htmlmin_opts:
+        remove_comments: true

@@ -1,0 +1,24 @@
+INHERIT: mkdocs.common.yml
+
+## Site settings
+site_name: dnloop
+site_url: https://dnloop.github.io/en
+site_description: Personal corner of the Internet.
+docs_dir: 'docs/en'
+site_dir: 'generated/en'
+# edit_uri: 'blob/master/docs/en'
+
+## Theme settings
+theme:
+  language: en
+
+## Plugin settings
+plugins:
+  search:
+    lang: en
+  blog:
+    post_excerpt_separator: <!-- more -->
+
+## Extra data
+extra:
+  made_with: Made with ♥

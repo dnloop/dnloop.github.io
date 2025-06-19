@@ -3,8 +3,21 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'docs/**'
+      - 'requirements.txt'
+      - 'mkdocs.common.yml'
+      - 'mkdocs.en.yml'
+      - 'mkdocs.es.yml'
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -24,12 +37,9 @@ jobs:
           entrypoint: mkdocs
           args: build --config-file=mkdocs.en.yml  
 
-      # - name: Copy redirect index page
-      #   run: sudo cp /index.html /site
-
       - uses: actions/setup-python@v4
         with:
-          python-version: 3.13
+          python-version: '3.x'
 
       - name: Deploy docs to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3

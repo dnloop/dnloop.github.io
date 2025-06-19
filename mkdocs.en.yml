@@ -5,8 +5,7 @@ site_name: dnloop
 site_url: https://dnloop.github.io/en
 site_description: Personal corner of the Internet.
 docs_dir: 'docs/en'
-site_dir: 'generated/en'
-# edit_uri: 'blob/master/docs/en'
+site_dir: 'site/en'
 
 ## Theme settings
 theme:

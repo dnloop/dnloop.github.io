@@ -5,7 +5,6 @@ on:
     branches:
       - main
     paths:
-      - 'docs/**'
       - 'requirements.txt'
       - 'mkdocs.common.yml'
       - 'mkdocs.en.yml'
@@ -52,5 +51,8 @@ jobs:
         with:
           key: ${{ github.ref }}
           path: .cache
-      - run: pip install mkdocs-material 
-      - run: pip install mike --force-reinstall --verbose
+      
+      - name: Copy redirect index page
+        run: sudo cp ./index.html ./site
+
+      - run: pip install mkdocs-material

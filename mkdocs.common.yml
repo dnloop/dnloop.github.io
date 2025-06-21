@@ -53,14 +53,7 @@ extra:
       lang: es
   social:
     - icon: octicons/mark-github-24
-      link: https://dnloop.github.io/
-  
-  ## Made with
-  ### this extra key can set `Made with ...` text in footer
-  ### set true to get default one
-  ### comment for set false to remove
-  ### or set your custom text!
-  # made_with: Made with ♥
+      link: https://github.com/dnloop/
 
   ## Navigation
   use_directory_urls: true

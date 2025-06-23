@@ -27,7 +27,7 @@ Existen varios archivos que deben modificarse de acuerdo al modelo de UPS del us
 ├── upsd.users # Requerido para enviar comandos al demonio
 ├── upsmon.conf # Configuración del demonio
 ├── upssched.conf # Temporizador y planificación de comandos
-├── upssched-execscript.sh # Script personalizado deñ usuario
+├── upssched-cmd # Script personalizado del usuario
 ├── upsset.conf
 ├── upsstats.html
 └── upsstats-single.html
@@ -80,8 +80,10 @@ En este archivo se encuentra la configuración del demonio. Proporciona una inte
 # Valores y comentarios por defecto omitidos
 SHUTDOWNCMD "/sbin/shutdown -h +0"
 NOTIFYCMD /usr/sbin/upssched
-NOTIFYFLAG ONLINE      SYSLOGW+WALL
-NOTIFYFLAG ONBATT      SYSLOG+WALL
+NOTIFYFLAG ONLINE      SYSLOG+WALL+EXEC
+NOTIFYFLAG ONBATT      SYSLOG+WALL+EXEC
+NOTIFYFLAG LOWBATT     SYSLOG+WALL+EXEC
+NOTIFYFLAG REPLBATT    SYSLOG+WALL+EXEC
 MONITOR ctb-1200@localhost 1 dnloop 1212 master # misma credenciales que ups.users
 ```
 
@@ -91,10 +93,10 @@ En este archivo se encuentra la configuración del temporizador y planificación
 
 ```sh
 # Valores y comentarios por defecto omitidos
-CMDSCRIPT /etc/nut/upssched-execscript.sh
+CMDSCRIPT /etc/nut/upssched-cmd
 
-PIPEFN /etc/nut/upssched.pipe
-LOCKFN /etc/nut/upssched.lock
+PIPEFN /var/lib/nut/upssched/upssched.pipe
+LOCKFN /var/lib/nut/upssched/upssched.lock
 
 AT ONBATT * START-TIMER shutdown_onbatt 40 # valor en segundos
 AT ONBATT * EXECUTE info_onbatt
@@ -112,7 +114,20 @@ AT REPLBATT * EXECUTE replace_batt
 
 Este script es donde se almacenan los comandos personalizados. Se llama a través de `upssched.conf`. Se puede modificar para ejecutar el manejo apropiado de los servicios y notificar los registros de eventos. Solo estoy registrando y forzando un apagado por ahora.
 
-**upssched-execscript.sh**
+**/var/lib/nut/upssched/**
+
+Los archivos de pipe y lock son necesarios para que el demonio funcione e informe al registrador de mensajes el estado de los comandos ejecutados.
+
+```sh
+touch upssched.pipe
+touch upssched.lock
+chown nut:nut upssched.*
+chmod 770 upssched.*
+```
+
+**upssched-cmd**
+
+Este script es donde se almacenan los comandos personalizados. Se llama a través de `upssched.conf`. Se puede modificar para ejecutar el manejo apropiado de los servicios y notificar los registros de eventos. Solo estoy registrando y forzando un apagado por ahora.
 
 ```sh
 #! /bin/sh
@@ -193,55 +208,71 @@ not listening on 127.0.0.1 port 3493
 no listening interface available
 ```
 
-Un servidor configurado de forma apropiada debería mostrar entradas similares, la más reciente es cuando la UPS se desconecta de la pared. Las más antiguas son cuando el servidor inicia de forma correcta.
+Un servidor configurado de forma apropiada debería mostrar entradas similares, la más reciente es cuando la UPS se desconecta de la pared. Las siguientes entradas, `info_onbatt` y `ups-back-on-power` provienen del script personalizado.
 
-**salida de `journalctl -rxb`**
+**`sudo journalctl -f` output**
+
+```sh 
+Broadcast message from nut@lyra (somewhere) (Mon Jun 23 17:36:42 2025):        
+                                                                               
+UPS ctb-1200@localhost on battery                                              
+                                                                               
+                                                                               
+Broadcast message from nut@lyra (somewhere) (Mon Jun 23 17:36:42 2025):        
+                                                                               
+UPS ctb-1200@localhost on battery                                              
+                                                                               
+Jun 23 17:36:42 lyra nut-monitor[8567]: UPS ctb-1200@localhost on battery
+Jun 23 17:36:43 lyra upsmon[9256]: info_onbatt): Now on battery
+...
+[OMITIDO]
+...                                                                              
+Broadcast message from nut@lyra (somewhere) (Mon Jun 23 17:36:52 2025):        
+                                                                               
+UPS ctb-1200@localhost on line power                                           
+                                                                               
+                                                                               
+Broadcast message from nut@lyra (somewhere) (Mon Jun 23 17:36:52 2025):        
+                                                                               
+UPS ctb-1200@localhost on line power                                           
+                                                                               
+Jun 23 17:36:52 lyra nut-monitor[8567]: UPS ctb-1200@localhost on line power
+Jun 23 17:36:52 lyra upsmon[9395]: ups-back-on-power): UPS back on power
+
+```
+
+**`sudo journalctl -rxb | grep upsd` output**
+
+```sh   
+Jun 23 17:25:17 lyra upsd[8540]: User dnloop@::1 logged into UPS [ctb-1200]
+Jun 23 17:25:13 lyra upsd[8540]: upsnotify: logged the systemd watchdog situation once, will not spam more about it
+Jun 23 17:25:13 lyra upsd[8540]: upsnotify: failed to notify about state NOTIFY_STATE_READY_WITH_PID: no notification tech defined, will not spam more about it
+Jun 23 17:25:13 lyra upsd[8540]: upsnotify: notify about state NOTIFY_STATE_READY_WITH_PID with libsystemd: was requested, but not running as a service unit now, will not spam more about it
+Jun 23 17:25:13 lyra upsd[8540]: Running as foreground process, not saving a PID file
+Jun 23 17:25:13 lyra upsd[8540]: Found 1 UPS defined in ups.conf
+Jun 23 17:25:13 lyra upsd[8540]: Connected to UPS [ctb-1200]: blazer_usb-ctb-1200
+Jun 23 17:25:13 lyra upsd[8540]: listening on 127.0.0.1 port 3493
+Jun 23 17:25:13 lyra upsd[8540]: listening on ::1 port 3493
+Jun 23 17:25:13 lyra nut-server[8540]: Network UPS Tools upsd 2.8.3 release
+```
+
+**`sudo journalctl -rxb | grep nut-server` output**
 
 ```sh
-Jun 21 16:02:36 lyra nut-monitor[1353]: UPS ctb-1200@localhost on battery
-Jun 21 16:02:36 lyra kernel: dragonrise 0003:0079:0006.0006: Force Feedback for DragonRise Inc. game controllers by Richard Walmsley <richwalm@gmail.com>
-Jun 21 16:02:36 lyra kernel: dragonrise 0003:0079:0006.0006: input,hidraw1: USB HID v1.10 Joystick [DragonRise Inc.   Generic   USB  Joystick  ] on usb-0000:06:00.3-1/input0
-Jun 21 16:02:36 lyra kernel: input: DragonRise Inc.   Generic   USB  Joystick   as /devices/pci0000:00/0000:00:08.1/0000:06:00.3/usb3/3-1/3-1:1.0/0003:0079:0006.0006/input/input26
-Jun 21 16:02:36 lyra kernel: usb 3-1: Manufacturer: DragonRise Inc.  
-Jun 21 16:02:36 lyra kernel: usb 3-1: Product: Generic   USB  Joystick  
-Jun 21 16:02:36 lyra kernel: usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-Jun 21 16:02:36 lyra kernel: usb 3-1: New USB device found, idVendor=0079, idProduct=0006, bcdDevice= 1.07
-Jun 21 16:02:36 lyra kernel: usb 3-1: new low-speed USB device number 4 using xhci_hcd
-Jun 21 16:02:36 lyra kernel: usb 3-1: USB disconnect, device number 2
-Jun 21 16:01:51 lyra nut-monitor[1353]: Communications with UPS ctb-1200@localhost established
-Jun 21 16:01:51 lyra upsd[7763]: User dnloop@::1 logged into UPS [ctb-1200]
-Jun 21 16:01:51 lyra nut-server[7763]: User dnloop@::1 logged into UPS [ctb-1200]
-Jun 21 16:01:49 lyra sudo[7776]: pam_unix(sudo:session): session closed for user root
-Jun 21 16:01:49 lyra sudo[7776]: pam_unix(sudo:session): session opened for user root(uid=0) by dnloop(uid=1000)
-Jun 21 16:01:49 lyra sudo[7776]:   dnloop : TTY=pts/0 ; PWD=/etc/nut ; USER=root ; COMMAND=/usr/bin/systemctl status nut-server.service
-Jun 21 16:01:46 lyra nut-monitor[1353]: Communications with UPS ctb-1200@localhost lost
-Jun 21 16:01:46 lyra nut-monitor[1353]: Poll UPS [ctb-1200@localhost] failed - Driver not connected
-Jun 21 16:01:42 lyra upsd[7763]: upsnotify: logged the systemd watchdog situation once, will not spam more about it
-Jun 21 16:01:42 lyra upsd[7763]: upsnotify: failed to notify about state NOTIFY_STATE_READY_WITH_PID: no notification tech defined, will not spam more about it
-Jun 21 16:01:42 lyra upsd[7763]: upsnotify: notify about state NOTIFY_STATE_READY_WITH_PID with libsystemd: was requested, but not running as a service unit now, will not spam more about it
-Jun 21 16:01:42 lyra nut-server[7763]: upsnotify: logged the systemd watchdog situation once, will not spam more about it
-Jun 21 16:01:42 lyra nut-server[7763]: upsnotify: failed to notify about state NOTIFY_STATE_READY_WITH_PID: no notification tech defined, will not spam more about it
-Jun 21 16:01:42 lyra upsd[7763]: Running as foreground process, not saving a PID file
-Jun 21 16:01:42 lyra nut-server[7763]: upsnotify: notify about state NOTIFY_STATE_READY_WITH_PID with libsystemd: was requested, but not running as a service unit now, will not spam more about it
-Jun 21 16:01:42 lyra nut-server[7763]: Running as foreground process, not saving a PID file
-Jun 21 16:01:42 lyra sudo[7755]: pam_unix(sudo:session): session closed for user root
-Jun 21 16:01:42 lyra blazer_usb[1343]: sock_connect: enabling asynchronous mode (auto)
-Jun 21 16:01:42 lyra upsd[7763]: Found 1 UPS defined in ups.conf
-Jun 21 16:01:42 lyra upsd[7763]: Connected to UPS [ctb-1200]: blazer_usb-ctb-1200
-Jun 21 16:01:42 lyra nut-server[7763]: Found 1 UPS defined in ups.conf
-Jun 21 16:01:42 lyra nut-server[7763]: Connected to UPS [ctb-1200]: blazer_usb-ctb-1200
-Jun 21 16:01:42 lyra upsd[7763]: listening on 127.0.0.1 port 3493
-Jun 21 16:01:42 lyra upsd[7763]: listening on ::1 port 3493
-Jun 21 16:01:42 lyra nut-server[7763]: listening on 127.0.0.1 port 3493
-Jun 21 16:01:42 lyra nut-server[7763]: listening on ::1 port 3493
-Jun 21 16:01:42 lyra nut-server[7763]: Network UPS Tools upsd 2.8.3 release
-Jun 21 16:01:42 lyra systemd[1]: Started Network UPS Tools - power devices information server.
-
+Jun 23 17:25:17 lyra nut-server[8540]: User dnloop@::1 logged into UPS [ctb-1200]
+Jun 23 17:25:13 lyra nut-server[8540]: upsnotify: logged the systemd watchdog situation once, will not spam more about it
+Jun 23 17:25:13 lyra nut-server[8540]: upsnotify: failed to notify about state NOTIFY_STATE_READY_WITH_PID: no notification tech defined, will not spam more about it
+Jun 23 17:25:13 lyra nut-server[8540]: upsnotify: notify about state NOTIFY_STATE_READY_WITH_PID with libsystemd: was requested, but not running as a service unit now, will not spam more about it
+Jun 23 17:25:13 lyra nut-server[8540]: Running as foreground process, not saving a PID file
+Jun 23 17:25:13 lyra nut-server[8540]: Found 1 UPS defined in ups.conf
+Jun 23 17:25:13 lyra nut-server[8540]: Connected to UPS [ctb-1200]: blazer_usb-ctb-1200
+Jun 23 17:25:13 lyra nut-server[8540]: listening on 127.0.0.1 port 3493       
+Jun 23 17:25:13 lyra nut-server[8540]: listening on ::1 port 3493  
 ```
 
 Para obtener información sobre la UPS, ejecutar `upsc <upsname>`
 
-```she
+```sh
 upsc ctb-1200
 battery.charge: 100
 battery.charge.low: 20

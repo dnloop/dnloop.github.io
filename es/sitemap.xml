@@ -2,30 +2,38 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://dnloop.github.io/es/</loc>
-         <lastmod>2025-06-23</lastmod>
+         <lastmod>2025-07-05</lastmod>
     </url>
     <url>
          <loc>https://dnloop.github.io/es/blog/</loc>
-         <lastmod>2025-06-23</lastmod>
+         <lastmod>2025-07-05</lastmod>
+    </url>
+    <url>
+         <loc>https://dnloop.github.io/es/blog/2025/07/05/distancia/</loc>
+         <lastmod>2025-07-05</lastmod>
     </url>
     <url>
          <loc>https://dnloop.github.io/es/blog/2025/06/19/hola-mundo/</loc>
-         <lastmod>2025-06-23</lastmod>
+         <lastmod>2025-07-05</lastmod>
     </url>
     <url>
          <loc>https://dnloop.github.io/es/linux/</loc>
-         <lastmod>2025-06-23</lastmod>
+         <lastmod>2025-07-05</lastmod>
     </url>
     <url>
          <loc>https://dnloop.github.io/es/linux/nut-monitor/</loc>
-         <lastmod>2025-06-23</lastmod>
+         <lastmod>2025-07-05</lastmod>
     </url>
     <url>
          <loc>https://dnloop.github.io/es/blog/archive/2025/</loc>
-         <lastmod>2025-06-23</lastmod>
+         <lastmod>2025-07-05</lastmod>
+    </url>
+    <url>
+         <loc>https://dnloop.github.io/es/blog/category/fragmentos_de_mi_mente/</loc>
+         <lastmod>2025-07-05</lastmod>
     </url>
     <url>
          <loc>https://dnloop.github.io/es/blog/category/hola_mundo/</loc>
-         <lastmod>2025-06-23</lastmod>
+         <lastmod>2025-07-05</lastmod>
     </url>
 </urlset>
